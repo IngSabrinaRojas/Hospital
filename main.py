@@ -5,7 +5,7 @@ Conexión a PostgreSQL (Neon) y API REST para el frontend
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from pydantic import BaseModel
 from typing import Optional
 import os
@@ -67,9 +67,28 @@ def get_db_connection():
             detail=f"Error al conectar con la base de datos: {str(e)}"
         )
 
-# Endpoint de prueba
-@app.get("/")
+# Endpoint raíz para mostrar el dashboard visual (index.html)
+@app.get("/", response_class=HTMLResponse)
 def root():
+    try:
+        with open("index.html", "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return """
+        <html>
+            <head><title>Dashboard Hospital</title></head>
+            <body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
+                <h1>¡API de Hospital Funcionando!</h1>
+                <p>Pero no se encontró el archivo <b>index.html</b> en el servidor de Render.</p>
+                <p>Asegúrate de subir el archivo index.html junto con main.py a tu repositorio de GitHub.</p>
+                <p><a href="/docs" style="color: blue; text-decoration: underline;">Ir a la documentación (Swagger /docs)</a></p>
+            </body>
+        </html>
+        """, 404
+
+# Endpoint de información alternativa por si se requiere en JSON
+@app.get("/api/info")
+def api_info():
     return {
         "mensaje": "API Dashboard Hospital funcionando correctamente",
         "version": "1.0.0",
